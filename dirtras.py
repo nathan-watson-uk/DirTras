@@ -495,6 +495,3 @@ with open(file, "r") as traverse_file, open(f"{OS}_files.txt", "r") as interest_
 
                 except OSError as error:
                     sys.exit(f"OS Error Occurred | {error} | Maybe you need to set --host-system?")
-
-
-# dirtras.py -u http://192.168.28.129/DVWA-master/vulnerabilities/fi/?page=include.php -p 80 --output C:\\Users\\natej\\PycharmProjects\\forensics\\output --os linux --host-system windows -f deep_directory_list.txt -c uif2fs4mpdqv6undddgmpgf9m0,low --cookie-name PHPSESSID,security
