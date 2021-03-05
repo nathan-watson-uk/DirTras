@@ -7,6 +7,7 @@ import sys
 import os
 import getopt
 import time
+import re
 
 # Define flag options
 short_opts = "hu:o:p:d:f:x:bc:"
@@ -197,13 +198,13 @@ for arg, val in arguments:
         if len(arguments) <= 1:  # Exits if help is the only flag
             sys.exit()
 
-    elif arg in ("-b", "--bugs"):
+    if arg in ("-b", "--bugs"):
         print(bug_info)
 
         if len(arguments) <= 1:
             sys.exit()
 
-    elif arg in ("-u", "--url"):
+    if arg in ("-u", "--url"):
         url, url_check = val, True
 
         if url[-1:] == "=":  # Last character should be =
@@ -214,49 +215,49 @@ for arg, val in arguments:
         except ValueError:
             sys.exit(f"Invalid URL - {url} \n\nIt seems that URL isn't affected by directory traversal.")
 
-    elif arg == "--os":
+    if arg == "--os":
         OS = val.lower()
         if OS in ("linux", "windows"):
             continue
         else:
             sys.exit(f"Invalid OS - {OS} \n\nUse either \'Linux\' or \'Windows\'")  # Exit if invalid OS defined
 
-    elif arg in ("-x", "--proxy"):
+    if arg in ("-x", "--proxy"):
 
         proxy = val
 
-    elif arg in ("-p", "--port"):
+    if arg in ("-p", "--port"):
         try:
             port = int(val)
             continue
         except ValueError as error:
             sys.exit("Error whilst setting port - {error} \n\nUser an integer arguement")
 
-    elif arg in ("-d", "--delay"):
+    if arg in ("-d", "--delay"):
         try:
             delay = int(val)
         except ValueError as error:
             sys.exit(f"Error whilst setting delay - {error} \n\nUse an integer arguement")
         continue
 
-    elif arg in ("-f", "--file"):
+    if arg in ("-f", "--file"):
         file, file_check = val, True
         continue
 
-    elif arg in ("-o", "--output"):
+    if arg in ("-o", "--output"):
         output, output_check = val, True
 
-    elif arg in ("-c", "--cookies"):
+    if arg in ("-c", "--cookies"):
         cookie = val
         if "," in cookie:
             cookie = cookie.split(",")
 
-    elif arg == "--cookie-name":
+    if arg == "--cookie-name":
         cookie_name = val
         if "," in cookie_name:
             cookie_name = cookie_name.split(",")
 
-    elif arg == "--host-system":
+    if arg == "--host-system":
         if val.lower() in ("linux", "windows"):
             host_sys = val.lower()
         else:
@@ -384,8 +385,8 @@ with open(file, "r") as traverse_file, open(f"{OS}_files.txt", "r") as interest_
                 directory_to_try = directory_to_try[1:]
 
             # Creates the traversal directory/interest file and removes trailing \n
-            directory_os_dir = fr"{traversal_technique}"[:-1]\
-                .replace("{FILE}", fr"{directory_to_try}"[:-1]).replace("{FILE", fr"{directory_to_try}"[:-1])
+            directory_os_dir = fr"{traversal_technique[:-1]}"
+            directory_os_dir = re.sub("{FILE}|{FILE", f"{directory_to_try[:-1]}", directory_os_dir)
 
             # Create urllib parse object
             parsed_url = urlparse(url)
