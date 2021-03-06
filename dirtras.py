@@ -242,6 +242,7 @@ for arg, val in arguments:
 
     if arg in ("-f", "--file"):
         file, file_check = val, True
+        print(file_check)
         continue
 
     if arg in ("-o", "--output"):
@@ -430,9 +431,8 @@ with open(file, "r") as traverse_file, open(f"{OS}_files.txt", "r") as interest_
                 # Get content disposition from header and build file name from it
                 # By using content-disposition it removes the need to create filenames based on target OS
 
-                file_download_name = \
-                    dir_traversal_target.headers.get('content-disposition') \
-                    .replace("\"", " ").replace("filename=", "").replace(" ", "")
+                file_download_name = dir_traversal_target.headers.get('content-disposition')
+                file_download_name = re.sub(r"[^A-Za-z0-9]+", "", file_download_name)
 
                 # If the content is empty continue
                 if len(dir_traversal_target.content) == 0:
@@ -482,11 +482,16 @@ with open(file, "r") as traverse_file, open(f"{OS}_files.txt", "r") as interest_
                 html_found_list.append(directory_to_try)  # Append the file that has been found
 
                 #  Creates filename depending on target OS
+
                 if OS == "windows":
-                    os_dir_file = directory_to_try.split(r"\\")[-1].rstrip("\n").replace(".", "_").replace("\\", "_")
+                    # Reduces need to chain multiple replace lines
+                    os_dir_file = directory_to_try.split(r"\\")[-1].rstrip("\n")
+                    os_dir_file = re.sub(r"[^A-Za-z0-9]+", "", os_dir_file)
 
                 else:
-                    os_dir_file = directory_to_try.rstrip("\n").replace(".", "_").replace("/", "_")
+                    # For Linux
+                    os_dir_file = directory_to_try.rstrip("\n")
+                    os_dir_file = re.sub(r"[^A-Za-z0-9]+", "", os_dir_file)
 
                 # Create directory filenames for specific host operating system
                 win_dir_filename = fr"{output}\\html\\{os_dir_file}_content_{iter_count}.html"
