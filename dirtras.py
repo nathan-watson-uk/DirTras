@@ -101,13 +101,13 @@ for arg, val in arguments:
         if len(arguments) <= 1:  # Exits if help is the only flag
             sys.exit()
 
-    if arg in ("-b", "--bugs"):
+    elif arg in ("-b", "--bugs"):
         print(bug_info)
 
         if len(arguments) <= 1:
             sys.exit()
 
-    if arg in ("-u", "--url"):
+    elif arg in ("-u", "--url"):
         url, url_check = val, True
 
         if url[-1:] == "=":  # Last character should be =
@@ -118,56 +118,56 @@ for arg, val in arguments:
         except ValueError:
             sys.exit(f"Invalid URL - {url} \n\nIt seems that URL isn't affected by directory traversal.")
 
-    if arg == "--target-os":
+    elif arg == "--target-os":
         target_os = val.lower()
         if target_os in ("linux", "windows"):
             continue
         else:
             sys.exit(f"Invalid OS - {target_os} \n\nUse either \'Linux\' or \'Windows\'")  # Exit if invalid OS defined
 
-    if arg in ("-x", "--proxy"):
+    elif arg in ("-x", "--proxy"):
 
         proxy = val
 
-    if arg in ("-p", "--port"):
+    elif arg in ("-p", "--port"):
         try:
             port = int(val)
             continue
         except ValueError as error:
             sys.exit("Error whilst setting port - {error} \n\nUser an integer arguement")
 
-    if arg in ("-d", "--delay"):
+    elif arg in ("-d", "--delay"):
         try:
             delay = int(val)
         except ValueError as error:
             sys.exit(f"Error whilst setting delay - {error} \n\nUse an integer arguement")
         continue
 
-    if arg in ("-f", "--file"):
+    elif arg in ("-f", "--file"):
         file, file_check = val, True
         print(file_check)
         continue
 
-    if arg in ("-o", "--output"):
+    elif arg in ("-o", "--output"):
         output, output_check = val, True
 
-    if arg in ("-c", "--cookies"):
+    elif arg in ("-c", "--cookies"):
         cookie = val
         if "," in cookie:
             cookie = cookie.split(",")
 
-    if arg == "--cookie-name":
+    elif arg == "--cookie-name":
         cookie_name = val
         if "," in cookie_name:
             cookie_name = cookie_name.split(",")
 
-    if arg == "--host-system":
+    elif arg == "--host-system":
         if val.lower() in ("linux", "windows"):
             host_sys = val.lower()
         else:
             sys.exit("Error whilst setting host system | Use \'linux\' or \'windows\'")
 
-    if arg in ("--L1", "--L2", "--L3"):
+    elif arg in ("--L1", "--L2", "--L3"):
         level_check, level = True, arg.replace("--", "")
 
 
