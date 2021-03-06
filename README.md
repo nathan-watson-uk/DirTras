@@ -27,7 +27,7 @@ python -m pip install requests
 Example:
 ```
 # Example of DVWA (Hard) Exploitation
-dirtras.py -u http://192.168.28.129/DVWA-master/vulnerabilities/fi/?page=include.php --output C:\\Users\\nate\\projects\\DirTras\\output --target-os linux --host-system windows --L1 -c uif2fs4mpdqv6undddgmpgf9m0,high,1,USD --cookie-name PHPSESSID,security,level,lang
+dirtras.py -u http://192.168.28.129/DVWA-master/vulnerabilities/fi/?page=include.php -p 80 --L3 --host-system windows --target-os linux --output C:\\Users\\nate\\Projects\\dirtras\\output
 ```
 
 ![Screenshot](https://raw.githubusercontent.com/Nate-one/DirTras/master/content/img2.png)

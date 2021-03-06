@@ -189,7 +189,7 @@ if not output_check:
     else:
         output, output_check = f"{os.getcwd()}/output", True
 
-    print(f"No Output File Specified | Creating a new folder at {output} | Ctrl + C to suspend | Use -o or --output")
+    print(f"No Output Folder Specified | Creating a new folder at {output} | Ctrl + C to suspend | Use -o or --output")
 
     time.sleep(5)
 

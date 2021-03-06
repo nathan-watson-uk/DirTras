@@ -2,7 +2,7 @@ help_info = """
 
 Usage Example:
 
->dirtras.py -u http://192.168.28.129/download.php?item= -p 80 --os linux --host-system windows -o C:\\Users\\nate\\tools\\output -f deep_directory_list.txt
+>dirtras.py -u http://192.168.28.129/download.php?item= -p 80 --target-os linux --host-system windows --L1
 
 -h  --help      Display this menu
 
