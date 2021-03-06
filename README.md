@@ -4,7 +4,7 @@ Automated Directory Traversal Exploitation Tool
 
 This tool allows for the automation of directory traversal for windows and linux based file system.
 
-![Screenshot](https://raw.githubusercontent.com/Nate-one/DirTras/master/img1.png)
+![Screenshot](https://raw.githubusercontent.com/Nate-one/DirTras/master/content/img1.png)
 
 
 # Benchmark
@@ -27,10 +27,10 @@ python -m pip install requests
 Example:
 ```
 # Example of DVWA (Hard) Exploitation
-dirtras.py -u http://192.168.28.129/DVWA-master/vulnerabilities/fi/?page=include.php --output C:\\Users\\nate\\projects\\DirTras\\output --os linux --host-system windows -f deep_directory_list.txt -c uif2fs4mpdqv6undddgmpgf9m0,high,1,USD --cookie-name PHPSESSID,security,level,lang
+dirtras.py -u http://192.168.28.129/DVWA-master/vulnerabilities/fi/?page=include.php --output C:\\Users\\nate\\projects\\DirTras\\output --target-os linux --host-system windows --L1 -c uif2fs4mpdqv6undddgmpgf9m0,high,1,USD --cookie-name PHPSESSID,security,level,lang
 ```
 
-![Screenshot](https://raw.githubusercontent.com/Nate-one/DirTras/master/img2.png)
+![Screenshot](https://raw.githubusercontent.com/Nate-one/DirTras/master/content/img2.png)
 
 
 # Legal Disclaimer

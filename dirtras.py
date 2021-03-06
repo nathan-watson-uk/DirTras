@@ -12,9 +12,8 @@ import re
 # Define flag options
 short_opts = "hu:o:p:d:f:x:bc:"
 
-long_opts = ["help", "url=", "os=", "port=", "delay=",
-             "file=", "proxy=", "host-system=", "bugs", "output=", "cookie=", "cookie-name="
-             ]
+long_opts = ["help", "url=", "target-os=", "port=", "delay=",
+             "file=", "proxy=", "host-system=", "bugs", "output=", "cookie=", "cookie-name=", "L1", "L2", "L3"]
 
 args = sys.argv
 
@@ -34,7 +33,10 @@ Usage Example:
 -f  --file      Use a file of custom traversal directories
 
     --host-system   Define the OS that dirtras is running on (Default linux)
-    
+
+    --L1        Light Traversal
+    --L2        Medium Traversal
+    --L3        Heavy Traversal
     
 Note: Unless the website is behind a login you typically don't need to use cookies
 
@@ -46,7 +48,7 @@ e.g --cookie-name PHPSESSID,security -c uif2fs4mpdqv6undddgmpgf9m0,low
 
 -x  --proxy     Use a proxy to route requests through
 -d  --delay     Set a delay between requests (Default is 0.01)
-    --os        Define what OS the web server is on (linux/windows) (Default linux)
+    --target-os        Define what OS the web server is on (linux/windows) (Default linux)
     
 -b  --bugs      Display currently known bugs and problems
 
@@ -79,7 +81,7 @@ To mitigate this I increased the delay to 0.02 and that seemed to work. However,
 
 --- 3 ---
 fail_traversal
-Whilst the variable fail_traversal is sent to \"../thisdoesntwork\" it hasn't been fully tested so
+Whilst the variable fail_traversal is sent as \"../thisdoesntwork\" it hasn't been fully tested so
 it may not always provide accruate results for what a failed traversal looks like.
 
 --- 4 ---
@@ -99,12 +101,14 @@ cookie = ""
 cookie_name = ""
 session_cookie = ""
 
-OS = "linux"
+target_os = "linux"
 host_sys = "linux"
 
 url = ""
 fail_traversal = "../thisdoesntwork"
 traversal_data_list = []
+
+level = "L1"
 
 # Keeps log of file that have been found
 file_found_list = []
@@ -117,6 +121,7 @@ delay = 0.02
 
 https = False
 file_check = False
+level_check = False
 output_check = False
 url_check = False
 
@@ -215,12 +220,12 @@ for arg, val in arguments:
         except ValueError:
             sys.exit(f"Invalid URL - {url} \n\nIt seems that URL isn't affected by directory traversal.")
 
-    if arg == "--os":
-        OS = val.lower()
-        if OS in ("linux", "windows"):
+    if arg == "--target-os":
+        target_os = val.lower()
+        if target_os in ("linux", "windows"):
             continue
         else:
-            sys.exit(f"Invalid OS - {OS} \n\nUse either \'Linux\' or \'Windows\'")  # Exit if invalid OS defined
+            sys.exit(f"Invalid OS - {target_os} \n\nUse either \'Linux\' or \'Windows\'")  # Exit if invalid OS defined
 
     if arg in ("-x", "--proxy"):
 
@@ -264,11 +269,14 @@ for arg, val in arguments:
         else:
             sys.exit("Error whilst setting host system | Use \'linux\' or \'windows\'")
 
+    if arg in ("--L1", "--L2", "--L3"):
+        level_check, level = True, arg.replace("--", "")
+
 
 # Check that certain flags have been called
 
-if not file_check:
-    sys.exit("Directory Traversal Failed - No File Specified | Use -f or --file")
+if not file_check and not level_check:
+    sys.exit("Directory Traversal Failed - No File Specified | Use -f, --file or --L1, --L2, --L3")
 
 if not url_check:
     sys.exit("Directory Traversal Failed - No URL Specified | Use -u or --url")
@@ -336,9 +344,24 @@ except FileExistsError as error:
     print(f"Folder {output} already exists.  Continuing...")
     time.sleep(1)
 
-# Main loops to
 
-with open(file, "r") as traverse_file, open(f"{OS}_files.txt", "r") as interest_dirs:
+# If levels are being used | find their directory and use it as file var
+if level_check:
+
+    if host_sys == "windows":
+        file = f"{os.path.dirname(os.path.realpath(__file__))}\\content\\{level}.txt"
+
+    else:
+        file = f"{os.path.dirname(os.path.realpath(__file__))}/content/{level}.txt"
+
+# Creates os_file var | directories to search for
+if host_sys == "windows":
+    os_file = f"{os.path.dirname(os.path.realpath(__file__))}\\content\\{target_os}_files.txt"
+
+else:
+    os_file = f"{os.path.dirname(os.path.realpath(__file__))}/content/{target_os}_files.txt"
+
+with open(file, "r") as traverse_file, open(os_file, "r") as interest_dirs:
 
     session = requests.session()
 
@@ -483,7 +506,7 @@ with open(file, "r") as traverse_file, open(f"{OS}_files.txt", "r") as interest_
 
                 #  Creates filename depending on target OS
 
-                if OS == "windows":
+                if target_os == "windows":
                     # Reduces need to chain multiple replace lines
                     os_dir_file = directory_to_try.split(r"\\")[-1].rstrip("\n")
                     os_dir_file = re.sub(r"[^A-Za-z0-9]+", "", os_dir_file)
