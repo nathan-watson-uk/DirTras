@@ -184,7 +184,7 @@ if not output_check:
 
     # Changes default output directory depending on OS
     if host_sys == "windows":
-        output, output_check = fr"{os.getcwd()}\\output", True
+        output, output_check = fr"{os.getcwd()}\output", True
 
     else:
         output, output_check = f"{os.getcwd()}/output", True
@@ -232,11 +232,14 @@ if cookie_name and cookie:
 
 try:
     if host_sys == "windows":
-        os.mkdir(fr"{output}\\html")
-        os.mkdir(fr"{output}\\downloaded")
+        os.mkdir(f"{output}")
+        os.mkdir(fr"{output}\html")
+        os.mkdir(fr"{output}\downloaded")
+
     else:
-        os.mkdir(f"{output}\html")
-        os.mkdir(f"{output}\downloaded")
+        os.mkdir(f"{output}")
+        os.mkdir(f"{output}/html")
+        os.mkdir(f"{output}/downloaded")
 
 except FileExistsError as error:
     print(f"Folder {output} already exists.  Continuing...")
