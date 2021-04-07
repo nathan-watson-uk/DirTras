@@ -382,7 +382,7 @@ with open(file, "r") as traverse_file, open(os_file, "r") as interest_dirs:
                 else:
 
                     # Linux directory formatting
-                    open(f"{output}/downloaded/{file_download_name}_{iter_count}.txt",
+                    open(f"{output}/downloaded/{file_download_name}_{iter_count}.txt".replace("filename", ""),
                          "wb").write(dir_traversal_target.content)
 
                     file_counter += 1
@@ -418,8 +418,8 @@ with open(file, "r") as traverse_file, open(os_file, "r") as interest_dirs:
                     os_dir_file = re.sub(r"[^A-Za-z0-9]+", "", os_dir_file)
 
                 # Create directory filenames for specific host operating system
-                win_dir_filename = fr"{output}\\html\\{os_dir_file}_content_{iter_count}.html"
-                linux_dir_filename = f"{output}/html/{os_dir_file}_content_{iter_count}.html"
+                win_dir_filename = fr"{output}\\html\\{os_dir_file}_content_{iter_count}.html".replace("filename", "")
+                linux_dir_filename = f"{output}/html/{os_dir_file}_content_{iter_count}.html".replace("filename", "")
 
                 try:
                     if host_sys == "windows":
