@@ -55,8 +55,10 @@ Feel free to add it back but if you get HTTPConnectionPool Read timed out error 
 --- 2 ---
 
 [WinError 10048]
-Ephemeral Port Exhausation is a problem when sending thousands of requests in a short span on time.
+Ephemeral Port Exhausation is a problem when sending thousands of requests in a short span of time.
 To mitigate this I increased the delay to 0.02 and that seemed to work. However, you may want it higher.
+The way to fix this would be by using connection pools which allows the connection to be reused but I can't
+seem to currently get this to work.
 
 --- 3 ---
 fail_traversal
