@@ -116,7 +116,7 @@ for arg, val in arguments:
             url = url[:(url.index("=") + 1)]  # Tries to strip url to get = to last character position
 
         except ValueError:
-            sys.exit(f"Invalid URL - {url} \n\nIt seems that URL isn't affected by directory traversal.")
+            print(f"Looks like it might not be vulnerable...")
 
     elif arg == "--target-os":
         target_os = val.lower()
