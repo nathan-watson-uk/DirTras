@@ -59,12 +59,6 @@ dirtras.py -u http://192.168.28.129/DVWA-master/vulnerabilities/fi/?page=include
 ![Screenshot](https://raw.githubusercontent.com/Nate-one/DirTras/master/content/img2.png)
 
 
-# Discord
-
-To ask questions, keep up with development and join our community:
-
-* [Join The Discord Server]([Discord Server](https://discord.gg/wz9X6pTrZm).)
-
 # Legal Disclaimer
 
 Usage of DirTras for attacking targets without prior mutual consent is illegal. 
