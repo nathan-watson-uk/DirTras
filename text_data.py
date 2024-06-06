@@ -2,7 +2,7 @@ help_info = """
 
 Usage Example:
 
->dirtras.py -u http://192.168.28.129/download.php?item= -p 80 --target-os linux --host-system windows --L1
+>dirtras.py -u http://192.168.28.129/download.php?item= -p 80 --L1
 
 -h  --help      Display this menu
 
@@ -25,7 +25,6 @@ Note: Unless the website is behind a login you typically don't need to use cooki
 (To use multiple cookies seperate each name/cookie with a comma (,) and place in respective order.)
 e.g --cookie-name PHPSESSID,security -c uif2fs4mpdqv6undddgmpgf9m0,low
 
--x  --proxy     Use a proxy to route requests through
 -d  --delay     Set a delay between requests (Default is 0.01)
     --target-os        Define what OS the web server is on (linux/windows) (Default linux)
 
@@ -49,7 +48,7 @@ KNOWN DIRTRAS BUGS:
 
 --- 1 ---
 /proc/self/cwd/index.php 
-Was removed from linux_files.txt because it crashed DVWA during test.
+Was removed from linux_files.txt because it crashed DVWA during testing.
 Feel free to add it back but if you get HTTPConnectionPool Read timed out error than that might be it.
 
 --- 2 ---
@@ -75,26 +74,23 @@ probably due to tcp/udp files increasing and decreasing in size.
 
 """
 
-run_info = """
+run_info = r"""
 
- /$$$$$$$  /$$        /$$$$$$$$                          
-| $$__  $$|__/       |__  $$__/                          
-| $$  \ $$ /$$  /$$$$$$ | $$  /$$$$$$  /$$$$$$   /$$$$$$$
-| $$  | $$| $$ /$$__  $$| $$ /$$__  $$|____  $$ /$$_____/
-| $$  | $$| $$| $$  \__/| $$| $$  \__/ /$$$$$$$|  $$$$$$ 
-| $$  | $$| $$| $$      | $$| $$      /$$__  $$ \____  $$
-| $$$$$$$/| $$| $$      | $$| $$     |  $$$$$$$ /$$$$$$$/
-|_______/ |__/|__/      |__/|__/      \_______/|_______/ 
+██████  ██ ██████  ████████ ██████   █████  ███████ 
+██   ██ ██ ██   ██    ██    ██   ██ ██   ██ ██      
+██   ██ ██ ██████     ██    ██████  ███████ ███████ 
+██   ██ ██ ██   ██    ██    ██   ██ ██   ██      ██ 
+██████  ██ ██   ██    ██    ██   ██ ██   ██ ███████             
+      by Nathan Watson                                      
 
-                                            
 Automated Directory Traversal Exploitation Tool
 
 This tool allows for the automation of directory traversal for windows and linux based file systems.
 
 (This is currently a work in progress so expect bugs)
 
-Created by @Nate-One
-https://github.com/Nate-one
+Created by @Nathan-Watson-UK
+https://github.com/nathan-watson-uk
 
 Tested On:
 VulnHub - Seattle 0.0.3

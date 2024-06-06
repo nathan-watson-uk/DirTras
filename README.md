@@ -1,69 +1,52 @@
 # DirTras
+## _An Automated Solution for Directory Traversal Attacks_
 
-Automated Directory / Path Traversal Exploitation Tool
+_A web application testing tool used to automate directory traversal (path traversal/local file inclusion) on Windows and Linux file systems._
 
-This tool allows for the automation of directory traversal for windows and linux file systems.
-
-![Screenshot](https://raw.githubusercontent.com/Nate-one/DirTras/master/content/img1.png)
-
-
-# Benchmark
-
-* [DVWA](https://github.com/ethicalhack3r/DVWA) (low/medium/high)
-* [VulnHub Seattle 0.0.3](https://www.vulnhub.com/entry/seattle-v03,145/)
-
-# Testing
-
-Tested on Windows 10 20H2, Ubuntu 20.04.2 and Kali Linux 2021.1 | Using Python 3.8
-
-Please raise an issue if you encounter any problems.
-
-Alternatively join our [Discord Server](https://discord.gg/wz9X6pTrZm).
-
-
-# Installation
-```
-git clone https://github.com/Nate-one/DirTras
-```
-
-# Requirements
-```
-Python 3 | Requests 2.25.1 or above
-```
 
 ```
-python -m pip install requests
+usage: dirtras.py [-h] -u URL [--target-os {linux,windows}] [-p PORT]
+                  [-d DELAY] [-f FILE] [-o OUTPUT] [-c COOKIES]
+                  [--cookie-name COOKIE_NAME] [--host-system {linux,windows}]
+                  [-b] [--L1] [--L2] [--L3]
 ```
 
-## Don't have pip?
-```
-Apt:
-sudo apt-get install python3-pip
+## Installation
 
-Yum:
-sudo yum install epel-release
-sudo yum install python-pip
-```
+DirTras likely requires [Python 3 - 3.8+](https://www.python.org/) to run.
 
-# Usage
-Example:
-```
-# Example of DVWA (Hard) Exploitation
-dirtras.py -u http://192.168.28.129/DVWA-master/vulnerabilities/fi/?page=include.php -p 80 --L3 --host-system windows --target-os linux --output C:\\Users\\nate\\Projects\\dirtras\\output
+Git Clone the repository & navigate to the directory
+
+```bash
+git clone https://github.com/nathan-watson-uk/DirTras.git
+
+cd DirTras
 ```
 
+Install the requirements:
+
+```bash
+pip3 install -r requirements.txt
 ```
-# Use -h or --help to access DirTras flags
+
+Run the script and view the usage page:
+```bash
+python3 dirtras.py -h
 ```
 
-![Screenshot](https://raw.githubusercontent.com/Nate-one/DirTras/master/content/img2.png)
+## Known Issues -
+
+- Ephemeral Port Exhaustion, please modify the delay if this is encountered
+- /proc/self/cwd/index.php is not included due to crashing DVWA host, please add it back manually if you wsh
+- To determine a path that does not exist, "/thisdoesntwork" is used. If this exists, the script will return false positives
+- The file counter can be buggy at times
 
 
-# Legal Disclaimer
 
-Usage of DirTras for attacking targets without prior mutual consent is illegal. 
-It's the end user's responsibility to obey all applicable local, state and federal laws. 
-Developers assume no liability and are not responsible for any misuse or damage caused by this program.
+## Disclaimer -
 
-This tool was developed specifically for educational and professional security testing.
+The DirTras tool is provided for educational and research purposes only. By using this tool, you acknowledge and agree that:
 
+- **User Responsibility**: You are solely responsible for your use of DirTras and any consequences thereof. The developers of DirTras shall not be responsible for any misuse or illegal use of this tool by users.
+
+- **Legal Compliance**: You will comply with all applicable laws, regulations, and ethical standards governing your use of this tool, including but not limited to data protection laws and regulations.

