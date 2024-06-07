@@ -64,7 +64,7 @@ def main():
     parser.add_argument("--L1", action="store_true", help="Use level 1 techniques")
     parser.add_argument("--L2", action="store_true", help="Use level 2 techniques")
     parser.add_argument("--L3", action="store_true", help="Use level 3 techniques")
-    parser.add_argument("-h", action="store_true", help="Usage Help Menu")
+    parser.add_argument("--help", action="store_true", help="Usage Help Menu")
 
     args = parser.parse_args()
 
@@ -73,7 +73,7 @@ def main():
         print(bug_info)
         sys.exit()
 
-    if args.h:
+    if args.help:
         print(help_info)
         sys.exit()
 

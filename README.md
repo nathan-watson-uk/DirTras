@@ -5,7 +5,7 @@ _A web application testing tool used to automate directory traversal (path trave
 
 
 ```
-usage: dirtras.py [-h] -u URL [--target-os {linux,windows}] [-p PORT]
+usage: dirtras.py [-h] [--help] -u URL [--target-os {linux,windows}] [-p PORT]
                   [-d DELAY] [-f FILE] [-o OUTPUT] [-c COOKIES]
                   [--cookie-name COOKIE_NAME] [--host-system {linux,windows}]
                   [-b] [--L1] [--L2] [--L3]
@@ -31,7 +31,7 @@ pip3 install -r requirements.txt
 
 Run the script and view the usage page:
 ```bash
-python3 dirtras.py -h
+python3 dirtras.py --help
 ```
 
 ## Known Issues -
