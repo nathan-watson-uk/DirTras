@@ -50,8 +50,8 @@ def create_output_dirs(output):
 # Main function to execute the script
 def main():
     # Set up argument parser
-    parser = argparse.ArgumentParser(description="Directory Traversal Tool")
-    parser.add_argument("-u", "--url", required=True, help="Target URL")
+    parser = argparse.ArgumentParser(description="Directory Traversal Tool", add_help=False)
+    parser.add_argument("-u", "--url",  help="Target URL")
     parser.add_argument("--target-os", default="linux", choices=["linux", "windows"], help="Target operating system")
     parser.add_argument("-p", "--port", type=int, default=80, help="Target port")
     parser.add_argument("-d", "--delay", type=float, default=0.02, help="Delay between requests")
@@ -64,7 +64,7 @@ def main():
     parser.add_argument("--L1", action="store_true", help="Use level 1 techniques")
     parser.add_argument("--L2", action="store_true", help="Use level 2 techniques")
     parser.add_argument("--L3", action="store_true", help="Use level 3 techniques")
-    parser.add_argument("--help", action="store_true", help="Usage Help Menu")
+    parser.add_argument("-H", "--help", action="store_true", help="Usage Menu")
 
     args = parser.parse_args()
 

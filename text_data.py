@@ -4,7 +4,7 @@ Usage Example:
 
 >dirtras.py -u http://192.168.28.129/download.php?item= -p 80 --L1
 
--h  --help      Display this menu
+-H  --help      Display this menu
 
 -u  --url       Set the URL to traverse
 -o  --output    Specify output folder directory
@@ -96,6 +96,6 @@ Tested On:
 VulnHub - Seattle 0.0.3
 DVWA (Low, Medium, High)
 
-Use -h for help
+Use -H or --help for the usage menu
 
 """
